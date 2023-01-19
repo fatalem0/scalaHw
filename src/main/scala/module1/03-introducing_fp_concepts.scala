@@ -206,15 +206,15 @@ object hof{
      */
     def printIfAny(): Unit = this match {
       case Option.Some(value) => println(value)
-      case Option.None => ()
+      case Option.None =>
     }
 
     /**
      *
      * Реализовать метод zip, который будет создавать Option от пары значений из 2-х Option
      */
-    def zip[A](opt: Option[A]): Option[(T, A)] = this match {
-      case Option.Some(value) if !opt.isEmpty => Option((value, opt.get)) // если есть оба значения, то создаем
+    def zip[A](opt: Option[A]): Option[(T, A)] = (this, opt) match {
+      case (Option.Some(a), Option.Some(b)) => Option.Some((a, b)) // если есть оба значения, то создаем
       case _ => Option.None // если первое или второе значения пусты, то None
     }
 
@@ -283,21 +283,31 @@ object hof{
        reverseList(this)
      }
 
-     def flatMap[B](f: T => IterableOnce[B]): List[IterableOnce[B]] = map(f)
+     def ++[TT >: T](other: List[TT]): List[TT] = {
+       @tailrec
+       def go(initList: List[TT], resList: List[TT] = this.reverse()): List[TT] = initList match {
+         case List.::(head, tail) => go(tail, head :: resList)
+         case _ => resList
+       }
+
+       go(other).reverse()
+     }
+
+     def flatMap[B](f: T => List[B]): List[B] = {
+       @tailrec
+       def go(initList: List[T], resList: List[B] = List.Nil): List[B] = initList match {
+         case List.::(head, tail) => go(tail, f(head) ++ resList)
+         case _ => resList
+       }
+
+       go(this.reverse())
+     }
 
      /**
       *
       * Реализовать метод map для списка который будет применять некую ф-цию к элементам данного списка
       */
-     def map[B](f: T => B): List[B] = {
-       @tailrec
-       def mapRec(initList: List[T], resList: List[B] = List.Nil): List[B] = initList match {
-         case List.Nil => resList
-         case List.::(head, tail) => mapRec(tail, f(head) :: resList)
-       }
-
-       mapRec(this.reverse())
-     }
+      def map[B](f: T => B): List[B] = this.flatMap(x => List(f(x)))
 
      /**
       *

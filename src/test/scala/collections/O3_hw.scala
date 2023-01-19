@@ -54,10 +54,18 @@ class O3_hw extends AnyFlatSpec {
     assert(scalaList.map(_ * 2).mkString("") == myList.map(_ * 2).mkString(""))
   }
 
+  "++" should "concatenate two lists" in {
+    val scalaList = List(1, 2) ++ List(3, 4)
+    val myList = list.List(1, 2) ++ list.List(3, 4)
+
+    assert(scalaList.mkString("") == myList.mkString(""))
+  }
+
   "flatMap" should "flatten a list" in {
-    val scalaList = List("Alice", "Bob")
-    val myList = list.List("Alice", "Bob")
-    assert(scalaList.flatMap(_.toLowerCase).mkString("") == myList.flatMap(_.toLowerCase).mkString(""))
+    val scalaList = List(List(1, 2), List(3, 4))
+    val myList = list.List(list.List(1, 2), list.List(3, 4))
+    assert(scalaList.flatMap(x => x.map(_ * 2)).mkString("") ==
+      myList.flatMap(x => x.map(_ * 2)).mkString(""))
   }
 
   "filter" should "filter elements on some predicate" in {
